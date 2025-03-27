@@ -95,7 +95,7 @@ Below is a text diagram explaining how someone interacts with the service:
 
 1. **User** uploads a CSV file to the FastAPI server via the `/predict` endpoint.
 2. **FastAPI Server** receives the CSV file and validates it for the required columns.
-3. If the CSV file is valid, the **FastAPI Server** processes the data and sends it to the **XGBoost Model** for prediction.
+3. If the CSV file is valid, the **FastAPI Server** inputs the data to the **XGBoost Model** for prediction.
 4. The **XGBoost Model** returns the predictions to the **FastAPI Server**.
 5. The **FastAPI Server** sends the predictions back to the **User** in JSON format.
 

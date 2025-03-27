@@ -1,9 +1,10 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 import pandas as pd
 import io
 from xgboost import XGBClassifier
 from pydantic import BaseModel
 from typing import List
+import logging
 
 class PredictReturnModel(BaseModel):
     predictions: List[int]
@@ -46,19 +47,40 @@ final_features = [
 model = XGBClassifier()
 model.load_model("model.json")
 
+logger = logging.getLogger("uvicorn.error")
+
 @app.get("/")
 async def get_root():
     return {"message": "Welcome to Cloud Run"}
 
 @app.post("/predict", response_model=PredictReturnModel)
 async def predict(file: UploadFile = File(...)):
-    contents = await file.read()
-    df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
-
+    try:
+        df = pd.read_csv(io.StringIO((await file.read()).decode("utf-8")))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid CSV format. Expected a comma-delimited CSV with header row.")
+    
     missing = set(final_features) - set(df.columns)
     if missing:
-        return {"error": f"Missing columns in CSV: {missing}"}
-
+        raise HTTPException(status_code=400, detail=f"CSV is missing the following columns: {', '.join(missing)}")
+    
     df_final = df[final_features]
-    predictions = model.predict(df_final)
+    
+    if df_final.isnull().values.any():
+        raise HTTPException(status_code=400, detail="Input value cannot be null.")
+    
+    try:
+        df_final = df_final.astype(float)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="All input values must be floats.")
+    
+    if (df_final < 0).any().any():
+        raise HTTPException(status_code=400, detail="All values must be non-negative.")
+
+    try:
+        predictions = model.predict(df_final)
+    except Exception as e:
+        logger.exception("Internal error during prediction.")
+        raise HTTPException(status_code=500, detail="Internal error during prediction.")
+    
     return {"predictions": predictions.tolist()}
