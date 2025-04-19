@@ -8,6 +8,7 @@ from great_expectations.core.expectation_suite import ExpectationSuite
 from typing import List, Dict
 import logging
 import shap
+from fastapi.middleware.cors import CORSMiddleware 
 
 # schemas / data contracts
 class PredictReturnModel(BaseModel):
@@ -17,6 +18,15 @@ class PredictReturnModel(BaseModel):
 
 # initialize FastAPI
 app = FastAPI()
+
+# add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # list of features for model input
 final_features = [

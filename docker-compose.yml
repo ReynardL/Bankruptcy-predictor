@@ -1,5 +1,5 @@
 services:
-  streamlit_app:
+  app:
     build:
       context: ./frontend
     ports:

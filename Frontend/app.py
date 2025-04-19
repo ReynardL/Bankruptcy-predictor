@@ -2,8 +2,11 @@ import streamlit as st
 import pandas as pd
 import requests
 import io
+import os
 import plotly.graph_objects as go
 import plotly.express as px
+
+api_url = os.environ.get("GCP_API_URL", "http://localhost:8080/predict")
 
 # initialization
 st.set_page_config(
@@ -12,7 +15,6 @@ st.set_page_config(
     layout="wide"
 )
 st.title("Bankruptcy Prediction System")
-api_url = "http://api:8080/predict"
 
 required_columns = [
     'Quick Ratio',
@@ -97,10 +99,9 @@ def display_sample_explanation(idx):
         st.metric("Prediction Confidence", f"{prob:.2f}%")
     
     sorted_shap = sorted(shap.items(), key=lambda x: abs(x[1]))
-    top_features = sorted_shap[:10]
     
-    features = [item[0] for item in top_features]
-    values = [item[1] for item in top_features]
+    features = [item[0] for item in sorted_shap]
+    values = [item[1] for item in sorted_shap]
     pos_features = [f for f, v in zip(features, values) if v > 0]
     pos_values = [v for v in values if v > 0]
     neg_features = [f for f, v in zip(features, values) if v <= 0]
@@ -131,14 +132,14 @@ def display_sample_explanation(idx):
         ))
     
     fig.update_layout(
-        title="Top 10 Feature Contributions",
+        title="Top Feature Contributions",
         xaxis_title='SHAP Value (Impact on Prediction)',
         yaxis=dict(
             title='Features',
             categoryorder='array',
             categoryarray=features
         ),
-        height=500,
+        height=750,
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -311,9 +312,7 @@ with st.sidebar:
     st.header("Instructions")
     st.info("""
     1. Upload a CSV file containing the required financial indicators
-    2. Review the validation results
-    3. Examine the bankruptcy predictions with confidence intervals
-    4. Download the results if needed
+    2. Examine the results
     
     **Understanding the Results:**
     - **Bankruptcy Prediction**: 0 = Healthy, 1 = Bankrupt
@@ -324,7 +323,7 @@ with st.sidebar:
         - Moderate Risk: 40-60%
         - High Risk: 60-80%
         - Very High Risk: 80-100%
-    - **SHAP Values**: Explain how each feature impacts the prediction
+    - **SHAP Values**: Explain how each feature impacts each prediction
     """)
 
 # Main app layout

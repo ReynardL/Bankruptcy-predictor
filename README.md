@@ -1,9 +1,11 @@
 # Bankruptcy Predictor
 
-This project is a FastAPI-based web service that predicts financial returns based on input CSV files. The service uses a pre-trained XGBoost model to make predictions.
+This project is a web application that predicts financial returns based on input CSV files. It consists of a FastAPI-based backend for predictions and a Streamlit-based frontend for user interaction. The service uses a pre-trained XGBoost model to make predictions.
 
 ## Features
 
+- User-friendly Streamlit frontend for uploading CSV files and viewing results.
+- FastAPI backend for handling prediction requests.
 - Upload a CSV file containing financial data.
 - Validate the CSV file for required columns.
 - Predict financial returns using the XGBoost model.
@@ -13,6 +15,7 @@ This project is a FastAPI-based web service that predicts financial returns base
 
 - Python 3.10+
 - FastAPI
+- Streamlit
 - Pandas
 - XGBoost
 
@@ -29,18 +32,38 @@ This project is a FastAPI-based web service that predicts financial returns base
     uv sync
     ```
 
-3. Place the pre-trained XGBoost model (`model.json`) in the root directory of the project.
-
 ## Usage
 
-1. Start the FastAPI server:
-    ```bash
-    uvicorn App.main:app --reload
-    ```
+### Run both frontend and backend with Docker Compose
 
-2. Open your browser and navigate to `http://127.0.0.1:8000` to see the welcome message.
+```bash
+docker-compose up
+```
 
-3. Use the `/predict` endpoint to upload a CSV file and get predictions.
+This will start both the FastAPI backend and the Streamlit frontend.
+
+### Start the backend manually
+
+```bash
+uvicorn App.main:app --reload
+```
+
+### Start the frontend manually
+
+If you want to start the frontend manually, run:
+
+```bash
+streamlit run app.py
+```
+
+After starting, open your browser and navigate to `http://localhost:8501` to use the web interface, or to `http://127.0.0.1:8000` to see the FastAPI welcome message.
+
+You can use the `/predict` endpoint to upload a CSV file and get predictions via API, or use the Streamlit frontend for a graphical interface.
+
+## Website
+
+You can access the deployed website at:  
+[https://app-978501737888.us-central1.run.app/](https://app-978501737888.us-central1.run.app/)
 
 ## API Endpoints
 
@@ -91,7 +114,7 @@ The CSV file should contain the following columns:
 
 ## Diagram
 
-Below is a text diagram explaining how someone interacts with the service:
+Below is a text diagram explaining how someone interacts with the API service:
 
 1. **User** uploads a CSV file to the FastAPI server via the `/predict` endpoint.
 2. **FastAPI Server** receives the CSV file and validates it for the required columns.
@@ -99,7 +122,7 @@ Below is a text diagram explaining how someone interacts with the service:
 4. The **XGBoost Model** returns the predictions to the **FastAPI Server**.
 5. The **FastAPI Server** sends the predictions back to the **User** in JSON format.
 
-## Performance Metrics
+## Performance Metrics (API)
 
 - **Response time**:
   - ~10s between sending API request and receiving predictions (with cold start).
